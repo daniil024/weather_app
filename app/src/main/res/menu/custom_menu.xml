@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/cities_spinner"
+        app:actionViewClass="android.widget.Spinner"
+        app:showAsAction="ifRoom"
+        android:title="@string/city_spinner_title" />
+
+    <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search"
+        app:showAsAction="always|collapseActionView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
+
+    <item
+        android:id="@+id/action_share"
+        android:title="@string/share"
+        app:showAsAction="never">
+
+        <menu>
+            <item
+                android:id="@+id/share_instagram"
+                android:title="@string/inst"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/share_VK"
+                android:title="@string/vk"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_upload"
+        android:title="@string/upload"
+        app:showAsAction="never"/>
+
+</menu>

@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">YandexWeatherApp</string>
+
+    <string name="permission_granted">Permission is granted.</string>
+    <string name="permission_required">Location access is required to display the weather.</string>
+    <string name="ok">OK</string>
+
+    // Permission
+    <string name="next">Далее</string>
+    <string name="permission_next">Для полноценной работы нашего приложения с релевантными данными, пожалуйста, нажмите кноку ниже и предоставьте доступ к геопозиции вашего устройства.</string>
+
+
+    // Menu
+    <string name="search">Поиск</string>
+    <string name="share">Поделиться</string>
+    <string name="inst">Instagram</string>
+    <string name="vk">ВКонтакте</string>
+    <string name="upload">Загрузить погоду</string>
+    <string name="city_search">Введите название города…</string>
+    <string name="city_spinner_title">Москва</string>
+
+
 </resources>
