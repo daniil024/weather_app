@@ -18,6 +18,21 @@
     <string name="upload">Загрузить погоду</string>
     <string name="city_search">Введите название города…</string>
     <string name="city_spinner_title">Москва</string>
+    <string name="default_desc">defaultDesc</string>
 
+
+    // Main Fragment
+    <string name="wind_text">Ветер</string>
+    <string name="humidity_text">Влажность</string>
+    <string name="pressure_text">Давление</string>
+    <string name="degrees_sign">\u2103</string>
+    <string name="percent_sign">%</string>
+    <string name="speed_sign">км/ч</string>
+
+
+    <string-array name="weather_period">
+        <item>Сегодня</item>
+        <item>Неделя</item>
+    </string-array>
 
 </resources>

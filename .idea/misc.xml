@@ -3,10 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/drawable/image_placeholder.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/activity_main.xml" value="0.12135416666666667" />
         <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/fragment_permission.xml" value="0.2977777777777778" />
         <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/permission_fragment.xml" value="0.1956521739130435" />
-        <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/weather_fragment.xml" value="0.1598731884057971" />
+        <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/small_weather_card.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/spinner_period_item.xml" value="0.20969202898550723" />
+        <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/layout/weather_fragment.xml" value="0.1" />
         <entry key="..\:/AndroidStudioProjects/YandexWeatherApp/app/src/main/res/menu/custom_menu.xml" value="0.2977777777777778" />
       </map>
     </option>

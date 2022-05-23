@@ -1,22 +1,33 @@
 package com.example.yandexweatherapp
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
+import android.media.audiofx.Equalizer
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.example.yandexweatherapp.adapter.WeatherAdapter
+import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
+import kotlin.math.roundToInt
+import com.google.android.gms.location.*
 
 class WeatherFragment : Fragment() {
 
@@ -26,7 +37,15 @@ class WeatherFragment : Fragment() {
 
     private val viewModel: WeatherViewModel by activityViewModels()
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private lateinit var weatherAdapter: WeatherAdapter
+
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, exception ->
+        println("CoroutineExceptionHandler got $exception in $coroutineContext")
+    }
+
+    private val scope = CoroutineScope(Dispatchers.IO + exceptionHandler)
 
     private val permissionResult =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
@@ -42,11 +61,28 @@ class WeatherFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        fusedLocationProviderClient =
+            LocationServices.getFusedLocationProviderClient(requireContext())
+    }
+
     override fun onStart() {
         super.onStart()
         (activity as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
+        //accessPermissions(layout)
+    }
 
-        accessPermissions(layout)
+    override fun onResume() {
+        super.onResume()
+//        scope.launch(Dispatchers.IO) {
+//            viewModel.getWeather(17.338403, 10.161548, "ru")
+//        }
+        setupRecycler()
+        setupObserver()
+
+        getCurrentLocation()
     }
 
     override fun onStop() {
@@ -54,14 +90,52 @@ class WeatherFragment : Fragment() {
         scope.cancel()
     }
 
+    private fun setupObserver() {
+        viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
+            if (data != null) {
+                scope.launch(Dispatchers.Main) {
+                    binding.weatherTemp.text = data.current.temp.toInt().toString()
+                    binding.weatherTimezone.text = data.timezone
+                    binding.weatherParamsWindDynamic.text =
+                        data.current.wind_speed.roundToInt().toString()
+                    binding.weatherMain.text = data.current.weather[0].description
+                    binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
+                    binding.weatherParamsPressure.text = data.current.pressure.toString()
+                    weatherAdapter.setWeather(data.hourly)
+                    weatherAdapter.notifyDataSetChanged()
+
+                    Glide.with(requireContext())
+                        .load("http://openweathermap.org/img/wn/${data.current.weather[0].icon}@2x.png")
+                        .into(binding.weatherIcon)
+                }
+            }
+        }
+
+        viewModel.coordinates.observe(viewLifecycleOwner) { data ->
+            if(data!=null){
+                scope.launch(Dispatchers.IO) {
+                    viewModel.getWeather(data.first, data.second, "ru")
+                }
+            }
+        }
+    }
+
+    private fun setupRecycler() {
+        weatherAdapter = WeatherAdapter(requireContext())
+        binding.weatherList.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.weatherList.adapter = weatherAdapter
+        binding.weatherList.addItemDecoration(WeatherCardDecoration(8))
+    }
+
     private fun accessPermissions(view: View) {
         when {
             ContextCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED -> {
 //                layout.showSnackbar(
 //                    view,
@@ -73,10 +147,10 @@ class WeatherFragment : Fragment() {
 
             ActivityCompat.shouldShowRequestPermissionRationale(
                 requireActivity(),
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION
             ) && ActivityCompat.shouldShowRequestPermissionRationale(
                 requireActivity(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION
             ) -> {
                 layout.showSnackbar(
                     view,
@@ -86,8 +160,8 @@ class WeatherFragment : Fragment() {
                 ) {
                     permissionResult.launch(
                         arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION
                         )
                     )
                 }
@@ -96,8 +170,8 @@ class WeatherFragment : Fragment() {
             else -> {
                 permissionResult.launch(
                     arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION
                     )
                 )
             }
@@ -123,6 +197,62 @@ class WeatherFragment : Fragment() {
 //        }
     }
 
+
+    private fun getCurrentLocation() {
+        if (checkPermission()) {
+            if (isLocationEnabled()) {
+                fusedLocationProviderClient.lastLocation.addOnCompleteListener(requireActivity()) { task ->
+                    val location: Location? = task.result
+                    if (location == null) {
+                        Toast.makeText(
+                            requireContext(),
+                            "null received from location",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        viewModel.setCoordinates(location.latitude, location.longitude)
+                    }
+                }
+            } else {
+                Toast.makeText(requireContext(), "Turn on location!", Toast.LENGTH_SHORT).show()
+                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(intent)
+            }
+        } else {
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission() {
+        ActivityCompat.requestPermissions(
+            requireActivity(), arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ), PERMISSION_REQUEST_ACCESS_LOCATION
+        )
+    }
+
+    private fun checkPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager: LocationManager =
+            context?.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
+            LocationManager.NETWORK_PROVIDER
+        )
+    }
+
+    companion object {
+        private const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
+    }
 }
 
 fun View.showSnackbar(
