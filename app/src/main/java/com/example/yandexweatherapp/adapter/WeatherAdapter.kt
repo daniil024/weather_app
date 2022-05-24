@@ -8,9 +8,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
 import com.example.yandexweatherapp.R
-import com.example.yandexweatherapp.models.HourlyDTO
+import com.example.yandexweatherapp.models.HourlyDailyWeather
 
-class WeatherAdapter(context: Context) : RecyclerView.Adapter<HourlyViewHolder>() {
+class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyclerItemClicked) :
+    RecyclerView.Adapter<HourlyViewHolder>() {
 
     private var layoutInflater: LayoutInflater = LayoutInflater.from(context)
     private var imageLoader: RequestManager = Glide.with(context)
@@ -21,15 +22,15 @@ class WeatherAdapter(context: Context) : RecyclerView.Adapter<HourlyViewHolder>(
         imageLoader.applyDefaultRequestOptions(imageOption)
     }
 
-    private var weather: List<HourlyDTO> = listOf()
+    private var weather: List<HourlyDailyWeather> = listOf()
 
-    fun setWeather(hourly: List<HourlyDTO>) {
+    fun setWeather(hourly: List<HourlyDailyWeather>) {
         weather = hourly
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyViewHolder {
         return HourlyViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.small_weather_card, parent, false)
+            layoutInflater.inflate(R.layout.small_weather_card, parent, false)
         )
     }
 
@@ -39,7 +40,11 @@ class WeatherAdapter(context: Context) : RecyclerView.Adapter<HourlyViewHolder>(
 
     override fun getItemCount(): Int = weather.size
 
-    fun replaceData(newItems: List<HourlyDTO>) {
+    fun replaceData(newItems: List<HourlyDailyWeather>) {
 
     }
+}
+
+interface OnWeatherRecyclerItemClicked {
+    fun onClick(hourlyDailyWeather: HourlyDailyWeather)
 }

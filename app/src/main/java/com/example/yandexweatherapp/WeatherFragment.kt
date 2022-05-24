@@ -76,9 +76,6 @@ class WeatherFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        scope.launch(Dispatchers.IO) {
-//            viewModel.getWeather(17.338403, 10.161548, "ru")
-//        }
         setupRecycler()
         setupObserver()
 
@@ -112,7 +109,7 @@ class WeatherFragment : Fragment() {
         }
 
         viewModel.coordinates.observe(viewLifecycleOwner) { data ->
-            if(data!=null){
+            if (data != null) {
                 scope.launch(Dispatchers.IO) {
                     viewModel.getWeather(data.first, data.second, "ru")
                 }
@@ -224,11 +221,17 @@ class WeatherFragment : Fragment() {
     }
 
     private fun requestPermission() {
-        ActivityCompat.requestPermissions(
-            requireActivity(), arrayOf(
+//        ActivityCompat.requestPermissions(
+//            requireActivity(), arrayOf(
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            ), PERMISSION_REQUEST_ACCESS_LOCATION
+//        )
+        permissionResult.launch(
+            arrayOf(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ), PERMISSION_REQUEST_ACCESS_LOCATION
+            )
         )
     }
 
@@ -251,7 +254,7 @@ class WeatherFragment : Fragment() {
     }
 
     companion object {
-        private const val PERMISSION_REQUEST_ACCESS_LOCATION = 100
+        private const val PERMISSION_REQUEST_ACCESS_LOCATION = 101
     }
 }
 

@@ -37,6 +37,9 @@ data class WeatherDTO(
 )
 
 @Serializable
+sealed class HourlyDailyWeather
+
+@Serializable
 data class HourlyDTO(
     val dt: Long,
     val temp: Double,
@@ -45,7 +48,7 @@ data class HourlyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-)
+) : HourlyDailyWeather()
 
 @Serializable
 data class DailyDTO(
@@ -56,7 +59,8 @@ data class DailyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-)
+) : HourlyDailyWeather()
+
 
 @Serializable
 data class DailyTempDTO(
