@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.example.yandexweatherapp.R
 import com.example.yandexweatherapp.models.DailyHourly
+import com.example.yandexweatherapp.models.DailyHourlyType
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -17,7 +18,18 @@ class HourlyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val temp: TextView = itemView.findViewById(R.id.smallCardTemp)
 
     fun onBind(weather: DailyHourly, imageLoader: RequestManager) {
-        time.text = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(Date(weather.dt * 1000))
+        if (weather.type == DailyHourlyType.DAILY) {
+            time.textSize = 12f
+            time.text = SimpleDateFormat(
+                "MM-dd",
+                Locale.ENGLISH
+            ).format(Date(weather.dt * 1000)) + weather.dayTime
+        } else {
+            time.text = SimpleDateFormat(
+                "yyyy-MM-dd hh:mm a",
+                Locale.ENGLISH
+            ).format(Date(weather.dt * 1000))
+        }
         temp.text = weather.temp.toInt().toString()
         imageLoader.load("http://openweathermap.org/img/wn/${weather.weather[0].icon}.png")
             .into(imageIcon)

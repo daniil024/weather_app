@@ -57,6 +57,8 @@ data class DailyDTO(
     val weather: List<WeatherDTO>
 )
 
+sealed class DailyHourlyAdapter
+
 // Class to map our DailyDTO to four objects with temp as Double
 data class DailyHourly(
     val dt: Long,
@@ -65,8 +67,34 @@ data class DailyHourly(
     val pressure: Int,
     val humidity: Int,
     val wind_speed: Double,
-    val weather: List<WeatherDTO>
-)
+    val weather: List<WeatherDTO>,
+    val type: DailyHourlyType,
+    val dayTime: DayTime?
+) {
+    constructor(
+        dt: Long,
+        temp: Double,
+        feels_like: Double,
+        pressure: Int,
+        humidity: Int,
+        wind_speed: Double,
+        weather: List<WeatherDTO>,
+        type: DailyHourlyType
+    ) : this(dt, temp, feels_like, pressure, humidity, wind_speed, weather, type, DayTime.DEFAULT)
+}
+
+enum class DailyHourlyType {
+    DAILY,
+    HOURLY
+}
+
+enum class DayTime {
+    MORNING,
+    DAY,
+    EVENING,
+    NIGHT,
+    DEFAULT
+}
 
 
 @Serializable

@@ -95,7 +95,7 @@ class WeatherFragment : Fragment() {
             if (data != null) {
                 scope.launch(Dispatchers.Main) {
                     binding.weatherTemp.text = data.current.temp.toInt().toString()
-                    binding.weatherTimezone.text = data.timezone
+                    binding.weatherTimezone.text = data.timezone.replace("_", " ")
                     binding.weatherParamsWindDynamic.text =
                         data.current.wind_speed.roundToInt().toString()
                     binding.weatherMain.text = data.current.weather[0].description
