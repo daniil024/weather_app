@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
-import android.media.audiofx.Equalizer
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -21,13 +20,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.yandexweatherapp.adapter.OnWeatherRecyclerItemClicked
 import com.example.yandexweatherapp.adapter.WeatherAdapter
 import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
+import com.example.yandexweatherapp.models.DailyHourly
+import com.example.yandexweatherapp.utils.Mapper
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
-import com.google.android.gms.location.*
 
 class WeatherFragment : Fragment() {
 
@@ -98,7 +101,7 @@ class WeatherFragment : Fragment() {
                     binding.weatherMain.text = data.current.weather[0].description
                     binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
                     binding.weatherParamsPressure.text = data.current.pressure.toString()
-                    weatherAdapter.setWeather(data.hourly)
+                    weatherAdapter.setWeather(Mapper.mapDailyDTO2DailyHourly(data.daily))
                     weatherAdapter.notifyDataSetChanged()
 
                     Glide.with(requireContext())
@@ -118,11 +121,26 @@ class WeatherFragment : Fragment() {
     }
 
     private fun setupRecycler() {
-        weatherAdapter = WeatherAdapter(requireContext())
+        weatherAdapter = WeatherAdapter(requireContext(), clickListener)
         binding.weatherList.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.weatherList.adapter = weatherAdapter
         binding.weatherList.addItemDecoration(WeatherCardDecoration(8))
+    }
+
+    private val clickListener = object : OnWeatherRecyclerItemClicked {
+        override fun onClick(hourlyDailyWeather: DailyHourly) {
+            binding.weatherTemp.text = hourlyDailyWeather.temp.toInt().toString()
+            binding.weatherParamsWindDynamic.text =
+                hourlyDailyWeather.wind_speed.roundToInt().toString()
+            binding.weatherMain.text = hourlyDailyWeather.weather[0].description
+            binding.weatherParamsHumidityDynamic.text = hourlyDailyWeather.humidity.toString()
+            binding.weatherParamsPressure.text = hourlyDailyWeather.pressure.toString()
+
+            Glide.with(requireContext())
+                .load("http://openweathermap.org/img/wn/${hourlyDailyWeather.weather[0].icon}@2x.png")
+                .into(binding.weatherIcon)
+        }
     }
 
     private fun accessPermissions(view: View) {

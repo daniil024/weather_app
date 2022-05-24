@@ -1,7 +1,6 @@
 package com.example.yandexweatherapp.models
 
 import kotlinx.serialization.Serializable
-import java.util.*
 
 @Serializable
 data class OneApiCallWeatherDTO(
@@ -37,9 +36,6 @@ data class WeatherDTO(
 )
 
 @Serializable
-sealed class HourlyDailyWeather
-
-@Serializable
 data class HourlyDTO(
     val dt: Long,
     val temp: Double,
@@ -48,7 +44,7 @@ data class HourlyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-) : HourlyDailyWeather()
+)
 
 @Serializable
 data class DailyDTO(
@@ -59,7 +55,18 @@ data class DailyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-) : HourlyDailyWeather()
+)
+
+// Class to map our DailyDTO to four objects with temp as Double
+data class DailyHourly(
+    val dt: Long,
+    val temp: Double,
+    val feels_like: Double,
+    val pressure: Int,
+    val humidity: Int,
+    val wind_speed: Double,
+    val weather: List<WeatherDTO>
+)
 
 
 @Serializable

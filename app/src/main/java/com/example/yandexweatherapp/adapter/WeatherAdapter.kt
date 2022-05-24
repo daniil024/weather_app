@@ -8,7 +8,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
 import com.example.yandexweatherapp.R
-import com.example.yandexweatherapp.models.HourlyDailyWeather
+import com.example.yandexweatherapp.models.DailyHourly
 
 class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyclerItemClicked) :
     RecyclerView.Adapter<HourlyViewHolder>() {
@@ -22,10 +22,10 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
         imageLoader.applyDefaultRequestOptions(imageOption)
     }
 
-    private var weather: List<HourlyDailyWeather> = listOf()
+    private var weather: List<DailyHourly> = listOf()
 
-    fun setWeather(hourly: List<HourlyDailyWeather>) {
-        weather = hourly
+    fun setWeather(weather: List<DailyHourly>) {
+        this.weather = weather
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyViewHolder {
@@ -36,15 +36,16 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
 
     override fun onBindViewHolder(holder: HourlyViewHolder, position: Int) {
         holder.onBind(weather[position], imageLoader)
+        holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
     }
 
     override fun getItemCount(): Int = weather.size
 
-    fun replaceData(newItems: List<HourlyDailyWeather>) {
+    fun replaceData(newItems: List<DailyHourly>) {
 
     }
 }
 
 interface OnWeatherRecyclerItemClicked {
-    fun onClick(hourlyDailyWeather: HourlyDailyWeather)
+    fun onClick(hourlyDailyWeather: DailyHourly)
 }

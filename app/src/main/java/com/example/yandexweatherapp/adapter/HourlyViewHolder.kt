@@ -6,35 +6,20 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.example.yandexweatherapp.R
-import com.example.yandexweatherapp.models.HourlyDTO
-import com.example.yandexweatherapp.models.HourlyDailyWeather
+import com.example.yandexweatherapp.models.DailyHourly
 import java.text.SimpleDateFormat
 import java.util.*
 
-sealed class HourlyDailyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    protected val imageIcon: ImageView = itemView.findViewById(R.id.smallCardIcon)
-    protected val time: TextView = itemView.findViewById(R.id.smallCardTime)
-    protected val temp: TextView = itemView.findViewById(R.id.smallCardTemp)
-}
+class HourlyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-class DailyViewHolder(itemView: View) : HourlyDailyViewHolder(itemView) {
+    private val imageIcon: ImageView = itemView.findViewById(R.id.smallCardIcon)
+    private val time: TextView = itemView.findViewById(R.id.smallCardTime)
+    private val temp: TextView = itemView.findViewById(R.id.smallCardTemp)
 
-    fun onBind(hourly: HourlyDailyWeather, imageLoader: RequestManager) {
-        hourly as HourlyDTO
-        time.text = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(Date(hourly.dt * 1000))
-        temp.text = hourly.temp.toInt().toString()
-        imageLoader.load("http://openweathermap.org/img/wn/${hourly.weather[0].icon}.png")
-            .into(imageIcon)
-    }
-}
-
-class HourlyViewHolder(itemView: View) : HourlyDailyViewHolder(itemView) {
-
-    fun onBind(hourly: HourlyDailyWeather, imageLoader: RequestManager) {
-        hourly as HourlyDTO
-        time.text = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(Date(hourly.dt * 1000))
-        temp.text = hourly.temp.toInt().toString()
-        imageLoader.load("http://openweathermap.org/img/wn/${hourly.weather[0].icon}.png")
+    fun onBind(weather: DailyHourly, imageLoader: RequestManager) {
+        time.text = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(Date(weather.dt * 1000))
+        temp.text = weather.temp.toInt().toString()
+        imageLoader.load("http://openweathermap.org/img/wn/${weather.weather[0].icon}.png")
             .into(imageIcon)
     }
 }
