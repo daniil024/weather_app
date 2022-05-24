@@ -30,6 +30,14 @@
     <string name="speed_sign">км/ч</string>
 
 
+    // Day time
+    <string name="morning">утро:</string>
+    <string name="day">день:</string>
+    <string name="evening">вечер:</string>
+    <string name="night">ночь:</string>
+
+
+
     <string-array name="weather_period">
         <item>Сегодня</item>
         <item>Неделя</item>

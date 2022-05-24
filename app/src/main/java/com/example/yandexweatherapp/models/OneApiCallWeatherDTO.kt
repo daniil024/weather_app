@@ -35,6 +35,8 @@ data class WeatherDTO(
     val icon: String
 )
 
+sealed class DailyHourlyAdapter
+
 @Serializable
 data class HourlyDTO(
     val dt: Long,
@@ -44,7 +46,7 @@ data class HourlyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-)
+) : DailyHourlyAdapter()
 
 @Serializable
 data class DailyDTO(
@@ -55,7 +57,7 @@ data class DailyDTO(
     val humidity: Int,
     val wind_speed: Double,
     val weather: List<WeatherDTO>
-)
+) : DailyHourlyAdapter()
 
 // Class to map our DailyDTO to four objects with temp as Double
 data class DailyHourly(

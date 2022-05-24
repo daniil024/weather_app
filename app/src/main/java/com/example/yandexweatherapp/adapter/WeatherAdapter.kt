@@ -9,9 +9,14 @@ import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
 import com.example.yandexweatherapp.R
 import com.example.yandexweatherapp.models.DailyHourly
+import com.example.yandexweatherapp.models.DailyHourlyAdapter
+import com.example.yandexweatherapp.models.HourlyDTO
 
 class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyclerItemClicked) :
-    RecyclerView.Adapter<HourlyViewHolder>() {
+    RecyclerView.Adapter<BaseViewHolder>() {
+
+    internal val VIEW_TYPE_ONE = 1
+    internal val VIEW_TYPE_TWO = 2
 
     private var layoutInflater: LayoutInflater = LayoutInflater.from(context)
     private var imageLoader: RequestManager = Glide.with(context)
@@ -22,21 +27,42 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
         imageLoader.applyDefaultRequestOptions(imageOption)
     }
 
-    private var weather: List<DailyHourly> = listOf()
+    private var weather: List<DailyHourlyAdapter> = listOf()
 
-    fun setWeather(weather: List<DailyHourly>) {
+    fun setWeather(weather: List<DailyHourlyAdapter>) {
         this.weather = weather
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyViewHolder {
-        return HourlyViewHolder(
-            layoutInflater.inflate(R.layout.small_weather_card, parent, false)
-        )
+    override fun getItemViewType(position: Int): Int {
+        return if (weather[position] is HourlyDTO) {
+            VIEW_TYPE_ONE
+        } else {
+            VIEW_TYPE_TWO
+        }
     }
 
-    override fun onBindViewHolder(holder: HourlyViewHolder, position: Int) {
-        holder.onBind(weather[position], imageLoader)
-        holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        return if (viewType == VIEW_TYPE_ONE) {
+            HourlyViewHolder(
+                layoutInflater.inflate(R.layout.small_weather_card, parent, false)
+            )
+        } else {
+            DailyViewHolder(
+                layoutInflater.inflate(R.layout.small_weather_card_daily, parent, false)
+            )
+        }
+    }
+
+    override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
+        if (weather[position] is HourlyDTO) {
+            holder as HourlyViewHolder
+            holder.onBind(weather[position], imageLoader)
+            holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+        } else {
+            holder as DailyViewHolder
+            holder.onBind(weather[position], imageLoader)
+            holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+        }
     }
 
     override fun getItemCount(): Int = weather.size
@@ -47,5 +73,5 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
 }
 
 interface OnWeatherRecyclerItemClicked {
-    fun onClick(hourlyDailyWeather: DailyHourly)
+    fun onClick(hourlyDailyWeather: DailyHourlyAdapter)
 }

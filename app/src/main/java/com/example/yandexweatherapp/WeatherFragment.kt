@@ -24,7 +24,10 @@ import com.example.yandexweatherapp.adapter.OnWeatherRecyclerItemClicked
 import com.example.yandexweatherapp.adapter.WeatherAdapter
 import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
+import com.example.yandexweatherapp.models.DailyDTO
 import com.example.yandexweatherapp.models.DailyHourly
+import com.example.yandexweatherapp.models.DailyHourlyAdapter
+import com.example.yandexweatherapp.models.HourlyDTO
 import com.example.yandexweatherapp.utils.Mapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -101,7 +104,7 @@ class WeatherFragment : Fragment() {
                     binding.weatherMain.text = data.current.weather[0].description
                     binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
                     binding.weatherParamsPressure.text = data.current.pressure.toString()
-                    weatherAdapter.setWeather(Mapper.mapDailyDTO2DailyHourly(data.daily))
+                    weatherAdapter.setWeather(data.daily)
                     weatherAdapter.notifyDataSetChanged()
 
                     Glide.with(requireContext())
@@ -129,17 +132,32 @@ class WeatherFragment : Fragment() {
     }
 
     private val clickListener = object : OnWeatherRecyclerItemClicked {
-        override fun onClick(hourlyDailyWeather: DailyHourly) {
-            binding.weatherTemp.text = hourlyDailyWeather.temp.toInt().toString()
-            binding.weatherParamsWindDynamic.text =
-                hourlyDailyWeather.wind_speed.roundToInt().toString()
-            binding.weatherMain.text = hourlyDailyWeather.weather[0].description
-            binding.weatherParamsHumidityDynamic.text = hourlyDailyWeather.humidity.toString()
-            binding.weatherParamsPressure.text = hourlyDailyWeather.pressure.toString()
+        override fun onClick(hourlyDailyWeather: DailyHourlyAdapter) {
+            if (hourlyDailyWeather is HourlyDTO) {
+                binding.weatherTemp.text = hourlyDailyWeather.temp.toInt().toString()
+                binding.weatherParamsWindDynamic.text =
+                    hourlyDailyWeather.wind_speed.roundToInt().toString()
+                binding.weatherMain.text = hourlyDailyWeather.weather[0].description
+                binding.weatherParamsHumidityDynamic.text = hourlyDailyWeather.humidity.toString()
+                binding.weatherParamsPressure.text = hourlyDailyWeather.pressure.toString()
 
-            Glide.with(requireContext())
-                .load("http://openweathermap.org/img/wn/${hourlyDailyWeather.weather[0].icon}@2x.png")
-                .into(binding.weatherIcon)
+                Glide.with(requireContext())
+                    .load("http://openweathermap.org/img/wn/${hourlyDailyWeather.weather[0].icon}@2x.png")
+                    .into(binding.weatherIcon)
+            }else{
+                hourlyDailyWeather as DailyDTO
+
+                binding.weatherTemp.text = hourlyDailyWeather.temp.day.toInt().toString()
+                binding.weatherParamsWindDynamic.text =
+                    hourlyDailyWeather.wind_speed.roundToInt().toString()
+                binding.weatherMain.text = hourlyDailyWeather.weather[0].description
+                binding.weatherParamsHumidityDynamic.text = hourlyDailyWeather.humidity.toString()
+                binding.weatherParamsPressure.text = hourlyDailyWeather.pressure.toString()
+
+                Glide.with(requireContext())
+                    .load("http://openweathermap.org/img/wn/${hourlyDailyWeather.weather[0].icon}@2x.png")
+                    .into(binding.weatherIcon)
+            }
         }
     }
 
