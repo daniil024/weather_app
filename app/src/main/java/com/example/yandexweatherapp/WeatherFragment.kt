@@ -11,6 +11,8 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -24,10 +26,7 @@ import com.example.yandexweatherapp.adapter.OnWeatherRecyclerItemClicked
 import com.example.yandexweatherapp.adapter.WeatherAdapter
 import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
-import com.example.yandexweatherapp.models.DailyDTO
-import com.example.yandexweatherapp.models.DailyHourly
-import com.example.yandexweatherapp.models.DailyHourlyAdapter
-import com.example.yandexweatherapp.models.HourlyDTO
+import com.example.yandexweatherapp.models.*
 import com.example.yandexweatherapp.utils.Mapper
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -77,15 +76,15 @@ class WeatherFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         (activity as AppCompatActivity).supportActionBar?.setDisplayShowTitleEnabled(false)
+        setupSpinner()
+        setupRecycler()
+        setupObserver()
+        getCurrentLocation()
         //accessPermissions(layout)
     }
 
     override fun onResume() {
         super.onResume()
-        setupRecycler()
-        setupObserver()
-
-        getCurrentLocation()
     }
 
     override fun onStop() {
@@ -93,24 +92,30 @@ class WeatherFragment : Fragment() {
         scope.cancel()
     }
 
+    private fun setupSpinner() {
+        binding.weatherPeriod.onItemSelectedListener = object : OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                if(p2==1){
+                    if(viewModel.oneCallApiCallWeatherDTO.value!=null) {
+                        bindData(viewModel.oneCallApiCallWeatherDTO.value!!, DailyHourlyEnum.DAILY)
+                    }
+                }else{
+                    if(viewModel.oneCallApiCallWeatherDTO.value!=null) {
+                        bindData(viewModel.oneCallApiCallWeatherDTO.value!!, DailyHourlyEnum.HOURLY)
+                    }
+                }
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+
+        }
+    }
+
     private fun setupObserver() {
         viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
             if (data != null) {
-                scope.launch(Dispatchers.Main) {
-                    binding.weatherTemp.text = data.current.temp.toInt().toString()
-                    binding.weatherTimezone.text = data.timezone
-                    binding.weatherParamsWindDynamic.text =
-                        data.current.wind_speed.roundToInt().toString()
-                    binding.weatherMain.text = data.current.weather[0].description
-                    binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
-                    binding.weatherParamsPressure.text = data.current.pressure.toString()
-                    weatherAdapter.setWeather(data.daily)
-                    weatherAdapter.notifyDataSetChanged()
-
-                    Glide.with(requireContext())
-                        .load("http://openweathermap.org/img/wn/${data.current.weather[0].icon}@2x.png")
-                        .into(binding.weatherIcon)
-                }
+                bindData(data, DailyHourlyEnum.HOURLY)
             }
         }
 
@@ -121,6 +126,30 @@ class WeatherFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun bindData(data: OneApiCallWeatherDTO, dailyHourlyEnum: DailyHourlyEnum) {
+        // TODO: do one method for bindData and clickListener
+
+        binding.weatherTemp.text = data.current.temp.toInt().toString()
+        binding.weatherTimezone.text = data.timezone
+        binding.weatherParamsWindDynamic.text =
+            data.current.wind_speed.roundToInt().toString()
+        binding.weatherMain.text = data.current.weather[0].description
+        binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
+        binding.weatherParamsPressure.text = data.current.pressure.toString()
+        //weatherAdapter.setWeather(data.daily)
+
+//                    weatherAdapter.notifyDataSetChanged()
+        if(dailyHourlyEnum.type=="Сегодня") {
+            weatherAdapter.replaceData(data.hourly)
+        }else{
+            weatherAdapter.replaceData(data.daily)
+        }
+
+        Glide.with(requireContext())
+            .load("http://openweathermap.org/img/wn/${data.current.weather[0].icon}@2x.png")
+            .into(binding.weatherIcon)
     }
 
     private fun setupRecycler() {
@@ -144,7 +173,7 @@ class WeatherFragment : Fragment() {
                 Glide.with(requireContext())
                     .load("http://openweathermap.org/img/wn/${hourlyDailyWeather.weather[0].icon}@2x.png")
                     .into(binding.weatherIcon)
-            }else{
+            } else {
                 hourlyDailyWeather as DailyDTO
 
                 binding.weatherTemp.text = hourlyDailyWeather.temp.day.toInt().toString()

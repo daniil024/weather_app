@@ -25,10 +25,10 @@ class DailyViewHolder(itemView: View) : BaseViewHolder(itemView) {
 
     fun onBind(weather: DailyHourlyAdapter, imageLoader: RequestManager) {
         weather as DailyDTO
-        tempMorn.text = weather.temp.morn.toInt().toString()+"%"
-        tempDay.text = weather.temp.day.toInt().toString()+"%"
-        tempEve.text = weather.temp.eve.toInt().toString()+"%"
-        tempNight.text = weather.temp.night.toInt().toString()+"%"
+        tempMorn.text = weather.temp.morn.toInt().toString()+"\u2103"
+        tempDay.text = weather.temp.day.toInt().toString()+"\u2103"
+        tempEve.text = weather.temp.eve.toInt().toString()+"\u2103"
+        tempNight.text = weather.temp.night.toInt().toString()+"\u2103"
         imageLoader.load("http://openweathermap.org/img/wn/${weather.weather[0].icon}.png")
             .into(imageIcon)
     }

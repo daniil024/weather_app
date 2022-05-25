@@ -3,6 +3,7 @@ package com.example.yandexweatherapp.adapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -15,8 +16,8 @@ import com.example.yandexweatherapp.models.HourlyDTO
 class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyclerItemClicked) :
     RecyclerView.Adapter<BaseViewHolder>() {
 
-    internal val VIEW_TYPE_ONE = 1
-    internal val VIEW_TYPE_TWO = 2
+    private val VIEW_TYPE_ONE = 1
+    private val VIEW_TYPE_TWO = 2
 
     private var layoutInflater: LayoutInflater = LayoutInflater.from(context)
     private var imageLoader: RequestManager = Glide.with(context)
@@ -67,8 +68,11 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
 
     override fun getItemCount(): Int = weather.size
 
-    fun replaceData(newItems: List<DailyHourly>) {
-
+    fun replaceData(newItems: List<DailyHourlyAdapter>) {
+        val weatherDiffUtilsCallback = WeatherDiffUtilsCallback(weather, newItems)
+        val diffResult = DiffUtil.calculateDiff(weatherDiffUtilsCallback)
+        this.setWeather(newItems)
+        diffResult.dispatchUpdatesTo(this)
     }
 }
 

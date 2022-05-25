@@ -70,6 +70,10 @@ data class DailyHourly(
     val weather: List<WeatherDTO>
 )
 
+enum class DailyHourlyEnum(val type:String){
+    DAILY("Неделя"),
+    HOURLY("Сегодня")
+}
 
 @Serializable
 data class DailyTempDTO(
