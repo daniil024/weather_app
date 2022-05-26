@@ -4,12 +4,14 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.location.Location
 import android.location.LocationManager
-import android.location.LocationRequest
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +20,6 @@ import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,15 +30,11 @@ import com.example.yandexweatherapp.adapter.WeatherAdapter
 import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
 import com.example.yandexweatherapp.models.*
-import com.example.yandexweatherapp.utils.Mapper
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.tasks.Task
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import kotlin.math.roundToInt
+
 
 class WeatherFragment : Fragment() {
 
@@ -118,18 +115,15 @@ class WeatherFragment : Fragment() {
 
     private fun setupObserver() {
         viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
-            if (data == null) {
-                Log.i("my_log_data:", "data==null")
-            } else {
-                Log.i("my_log_data:", data.toString())
-            }
             if (data != null) {
                 bindData(data, DailyHourlyEnum.HOURLY)
             }
         }
 
         viewModel.coordinates.observe(viewLifecycleOwner) { data ->
-            if (data != null) {
+            if (!checkInternetConnection()) {
+                Toast.makeText(requireContext(), "Turn on internet!", Toast.LENGTH_LONG).show()
+            } else if (data != null && checkInternetConnection()) {
                 scope.launch(Dispatchers.IO) {
                     viewModel.getWeather(data.first, data.second, "ru")
                 }
@@ -138,8 +132,6 @@ class WeatherFragment : Fragment() {
     }
 
     private fun bindData(data: OneApiCallWeatherDTO, dailyHourlyEnum: DailyHourlyEnum) {
-        // TODO: do one method for bindData and clickListener
-
         binding.weatherTemp.text = data.current.temp.toInt().toString()
         binding.weatherTimezone.text = data.timezone
         binding.weatherParamsWindDynamic.text =
@@ -147,9 +139,7 @@ class WeatherFragment : Fragment() {
         binding.weatherMain.text = data.current.weather[0].description
         binding.weatherParamsHumidityDynamic.text = data.current.humidity.toString()
         binding.weatherParamsPressure.text = data.current.pressure.toString()
-        //weatherAdapter.setWeather(data.daily)
 
-//                    weatherAdapter.notifyDataSetChanged()
         if (dailyHourlyEnum.type == "Сегодня") {
             weatherAdapter.replaceData(data.hourly)
         } else {
@@ -163,8 +153,13 @@ class WeatherFragment : Fragment() {
 
     private fun setupRecycler() {
         weatherAdapter = WeatherAdapter(requireContext(), clickListener)
-        binding.weatherList.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        if(resources.configuration.orientation==Configuration.ORIENTATION_PORTRAIT) {
+            binding.weatherList.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        }else {
+            binding.weatherList.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        }
         binding.weatherList.adapter = weatherAdapter
         binding.weatherList.addItemDecoration(WeatherCardDecoration(8))
     }
@@ -197,6 +192,36 @@ class WeatherFragment : Fragment() {
                     .into(binding.weatherIcon)
             }
         }
+    }
+
+    private fun checkInternetConnection(): Boolean {
+        val hasInternet: Boolean
+
+        val connectivityManager =
+            requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val networkCapabilities = connectivityManager.activeNetwork ?: return false
+            val actNw =
+                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+            hasInternet = when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                else -> false
+            }
+        } else {
+            hasInternet = try {
+                if (connectivityManager.activeNetworkInfo == null) {
+                    false
+                } else {
+                    connectivityManager.activeNetworkInfo?.isConnected!!
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+        return hasInternet
     }
 
     private fun getCurrentLocation() {
