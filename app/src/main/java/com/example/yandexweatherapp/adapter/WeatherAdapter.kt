@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.RequestOptions
 import com.example.yandexweatherapp.R
+import com.example.yandexweatherapp.models.DailyDTO
 import com.example.yandexweatherapp.models.DailyHourly
 import com.example.yandexweatherapp.models.DailyHourlyAdapter
 import com.example.yandexweatherapp.models.HourlyDTO
@@ -55,14 +56,17 @@ class WeatherAdapter(context: Context, private val clickListener: OnWeatherRecyc
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
-        if (weather[position] is HourlyDTO) {
-            holder as HourlyViewHolder
-            holder.onBind(weather[position], imageLoader)
-            holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
-        } else {
-            holder as DailyViewHolder
-            holder.onBind(weather[position], imageLoader)
-            holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+        when(weather[position]){
+            is HourlyDTO -> {
+                holder as HourlyViewHolder
+                holder.onBind(weather[position], imageLoader)
+                holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+            }
+            is DailyDTO -> {
+                holder as DailyViewHolder
+                holder.onBind(weather[position], imageLoader)
+                holder.itemView.setOnClickListener { clickListener.onClick(weather[position]) }
+            }
         }
     }
 

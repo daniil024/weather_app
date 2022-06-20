@@ -12,6 +12,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -30,6 +31,8 @@ import com.example.yandexweatherapp.adapter.WeatherAdapter
 import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
 import com.example.yandexweatherapp.models.*
+import com.example.yandexweatherapp.room.WeatherDatabase
+import com.example.yandexweatherapp.room.entities.OneApiCallWeatherEntity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.*
@@ -85,7 +88,11 @@ class WeatherFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        getCurrentLocation()
+        if(checkInternetConnection()) {
+            getCurrentLocation()
+        } else {
+
+        }
     }
 
     override fun onStop() {
@@ -117,6 +124,17 @@ class WeatherFragment : Fragment() {
         viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
             if (data != null) {
                 bindData(data, DailyHourlyEnum.HOURLY)
+                scope.launch (Dispatchers.IO) {
+                    val lat = data.lat
+                    val lon = data.lon
+                    val dbInstance = WeatherDatabase.getWeatherDatabase(requireContext())
+                    val dataToStore = OneApiCallWeatherEntity(lat = lat, lon = lon,
+                    timezone = data.timezone, timezone_offset = data.timezone_offset,
+                    current = data.current, hourly = data.hourly, daily = data.daily)
+                    dbInstance?.oneApiCallWeatherDao()?.insertWeatherAtPlace(dataToStore)
+
+                    Log.i("my_log:", dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace(lat, lon).toString())
+                }
             }
         }
 
