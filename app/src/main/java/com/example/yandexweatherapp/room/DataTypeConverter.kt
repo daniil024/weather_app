@@ -6,7 +6,7 @@ import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 import java.util.*
 
-class DataTypeConverter<T> {
+class DataTypeConverter {
 
     companion object {
         private val gson: Gson = Gson()
