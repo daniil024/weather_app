@@ -125,15 +125,22 @@ class WeatherFragment : Fragment() {
             if (data != null) {
                 bindData(data, DailyHourlyEnum.HOURLY)
                 scope.launch (Dispatchers.IO) {
+
                     val lat = data.lat
                     val lon = data.lon
                     val dbInstance = WeatherDatabase.getWeatherDatabase(requireContext())
                     val dataToStore = OneApiCallWeatherEntity(lat = lat, lon = lon,
                     timezone = data.timezone, timezone_offset = data.timezone_offset,
                     current = data.current, hourly = data.hourly, daily = data.daily)
+
+                    Log.i("my_log:", dataToStore.toString())
+
+
                     dbInstance?.oneApiCallWeatherDao()?.insertWeatherAtPlace(dataToStore)
 
-                    Log.i("my_log:", dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace(lat, lon).toString())
+
+
+                    Log.i("my_log:", dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace().toString())
                 }
             }
         }

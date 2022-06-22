@@ -5,7 +5,10 @@ import androidx.room.*
 import com.example.yandexweatherapp.room.entities.OneApiCallWeatherEntity
 
 @Database(entities = [OneApiCallWeatherEntity::class], version = 1)
-@TypeConverters(DataTypeConverter::class)
+@TypeConverters(
+    HourlyTypeConverter::class,
+    DailyTypeConverter::class, CurrentTypeConverter::class
+)
 abstract class WeatherDatabase : RoomDatabase() {
 
     abstract fun oneApiCallWeatherDao(): OneApiCallWeatherDao
@@ -19,7 +22,8 @@ abstract class WeatherDatabase : RoomDatabase() {
                     context.applicationContext,
                     WeatherDatabase::class.java,
                     "one_api_call"
-                ).build()
+                ).allowMainThreadQueries()
+                    .build()
             }
 
             return INSTANCE;

@@ -3,9 +3,13 @@ package com.example.yandexweatherapp.room.entities
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
 import com.example.yandexweatherapp.models.CurrentDTO
 import com.example.yandexweatherapp.models.DailyDTO
 import com.example.yandexweatherapp.models.HourlyDTO
+import com.example.yandexweatherapp.room.CurrentTypeConverter
+import com.example.yandexweatherapp.room.DailyTypeConverter
+import com.example.yandexweatherapp.room.HourlyTypeConverter
 
 @Entity(tableName = "one_api_call")
 data class OneApiCallWeatherEntity(
@@ -14,9 +18,15 @@ data class OneApiCallWeatherEntity(
     @ColumnInfo(name = "lon") val lon: Double,
     @ColumnInfo(name = "timezone") val timezone: String,
     @ColumnInfo(name = "timezone_offset") val timezone_offset: Int,
-    @ColumnInfo(name = "current") val current: CurrentDTO,
-    @ColumnInfo(name = "hourly") val hourly: List<HourlyDTO>,
-    @ColumnInfo(name = "daily") val daily: List<DailyDTO>
+    @ColumnInfo(name = "current")
+    @TypeConverters(CurrentTypeConverter::class)
+    val current: CurrentDTO,
+    @ColumnInfo(name = "hourly")
+    @TypeConverters(HourlyTypeConverter::class)
+    val hourly: List<HourlyDTO>,
+    @ColumnInfo(name = "daily")
+    @TypeConverters(DailyTypeConverter::class)
+    val daily: List<DailyDTO>
 )
 
 @Entity
