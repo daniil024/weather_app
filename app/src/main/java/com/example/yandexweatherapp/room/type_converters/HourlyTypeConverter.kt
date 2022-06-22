@@ -1,8 +1,7 @@
-package com.example.yandexweatherapp.room
+package com.example.yandexweatherapp.room.type_converters
 
 import androidx.room.TypeConverter
 import com.example.yandexweatherapp.models.HourlyDTO
-import com.example.yandexweatherapp.room.entities.HourlyEntity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.*

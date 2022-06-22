@@ -1,17 +1,14 @@
 package com.example.yandexweatherapp.room.entities
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room.*
 import com.example.yandexweatherapp.models.CurrentDTO
 import com.example.yandexweatherapp.models.DailyDTO
 import com.example.yandexweatherapp.models.HourlyDTO
-import com.example.yandexweatherapp.room.CurrentTypeConverter
-import com.example.yandexweatherapp.room.DailyTypeConverter
-import com.example.yandexweatherapp.room.HourlyTypeConverter
+import com.example.yandexweatherapp.room.type_converters.CurrentTypeConverter
+import com.example.yandexweatherapp.room.type_converters.DailyTypeConverter
+import com.example.yandexweatherapp.room.type_converters.HourlyTypeConverter
 
-@Entity(tableName = "one_api_call")
+@Entity(tableName = "one_api_call", indices = [Index(value = ["timezone"], unique = true)])
 data class OneApiCallWeatherEntity(
     @PrimaryKey(autoGenerate = true) val uid: Int = 0,
     @ColumnInfo(name = "lat") val lat: Double,

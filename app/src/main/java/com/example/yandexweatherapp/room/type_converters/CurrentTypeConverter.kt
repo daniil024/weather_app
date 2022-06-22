@@ -1,8 +1,7 @@
-package com.example.yandexweatherapp.room
+package com.example.yandexweatherapp.room.type_converters
 
 import androidx.room.TypeConverter
 import com.example.yandexweatherapp.models.CurrentDTO
-import com.example.yandexweatherapp.room.entities.CurrentEntity
 import com.google.gson.Gson
 
 class CurrentTypeConverter {

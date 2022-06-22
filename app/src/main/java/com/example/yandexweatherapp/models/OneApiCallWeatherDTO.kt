@@ -1,15 +1,27 @@
 package com.example.yandexweatherapp.models
 
+import androidx.room.*
+import com.example.yandexweatherapp.room.type_converters.CurrentTypeConverter
+import com.example.yandexweatherapp.room.type_converters.DailyTypeConverter
+import com.example.yandexweatherapp.room.type_converters.HourlyTypeConverter
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Entity(tableName = "one_api_call", indices = [Index(value = ["timezone"], unique = true)])
 data class OneApiCallWeatherDTO(
-    val lat: Double,
-    val lon: Double,
-    val timezone: String,
-    val timezone_offset: Int,
+    @PrimaryKey(autoGenerate = true) val uid: Int = 0,
+    @ColumnInfo(name = "lat") val lat: Double,
+    @ColumnInfo(name = "lon") val lon: Double,
+    @ColumnInfo(name = "timezone") val timezone: String,
+    @ColumnInfo(name = "timezone_offset") val timezone_offset: Int,
+    @ColumnInfo(name = "current")
+    @TypeConverters(CurrentTypeConverter::class)
     val current: CurrentDTO,
+    @ColumnInfo(name = "hourly")
+    @TypeConverters(HourlyTypeConverter::class)
     val hourly: List<HourlyDTO>,
+    @ColumnInfo(name = "daily")
+    @TypeConverters(DailyTypeConverter::class)
     val daily: List<DailyDTO>
 )
 

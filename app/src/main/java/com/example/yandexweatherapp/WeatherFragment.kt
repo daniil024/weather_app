@@ -3,6 +3,7 @@ package com.example.yandexweatherapp
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.location.Location
@@ -32,7 +33,6 @@ import com.example.yandexweatherapp.adapter.WeatherCardDecoration
 import com.example.yandexweatherapp.databinding.WeatherFragmentBinding
 import com.example.yandexweatherapp.models.*
 import com.example.yandexweatherapp.room.WeatherDatabase
-import com.example.yandexweatherapp.room.entities.OneApiCallWeatherEntity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.*
@@ -40,6 +40,12 @@ import kotlin.math.roundToInt
 
 
 class WeatherFragment : Fragment() {
+
+    companion object {
+        const val LOCATION_PREFERENCES = "location_weather"
+    }
+
+    private lateinit var locationSharedPreferences: SharedPreferences
 
     private lateinit var layout: View
     private var _binding: WeatherFragmentBinding? = null
@@ -74,6 +80,8 @@ class WeatherFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        locationSharedPreferences =
+            requireContext().getSharedPreferences(LOCATION_PREFERENCES, Context.MODE_PRIVATE)
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(requireContext())
     }
@@ -88,10 +96,10 @@ class WeatherFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if(checkInternetConnection()) {
+        if (checkInternetConnection()) {
             getCurrentLocation()
         } else {
-
+            scope.launch(Dispatchers.IO) { viewModel.getLocationFromSharPref() }
         }
     }
 
@@ -123,24 +131,22 @@ class WeatherFragment : Fragment() {
     private fun setupObserver() {
         viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
             if (data != null) {
+                val lat = data.lat
+                val lon = data.lon
+                scope.launch(Dispatchers.IO) {
+                    viewModel.putLocationToSharPref(lat, lon)
+                }
+
                 bindData(data, DailyHourlyEnum.HOURLY)
-                scope.launch (Dispatchers.IO) {
-
-                    val lat = data.lat
-                    val lon = data.lon
+                scope.launch(Dispatchers.IO) {
                     val dbInstance = WeatherDatabase.getWeatherDatabase(requireContext())
-                    val dataToStore = OneApiCallWeatherEntity(lat = lat, lon = lon,
-                    timezone = data.timezone, timezone_offset = data.timezone_offset,
-                    current = data.current, hourly = data.hourly, daily = data.daily)
 
-                    Log.i("my_log:", dataToStore.toString())
+                    dbInstance?.oneApiCallWeatherDao()?.insertWeatherAtPlace(data)
 
-
-                    dbInstance?.oneApiCallWeatherDao()?.insertWeatherAtPlace(dataToStore)
-
-
-
-                    Log.i("my_log:", dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace().toString())
+//                    Log.wtf(
+//                        "wtf_log:",
+//                        dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace(lat, lon).toString()
+//                    )
                 }
             }
         }
@@ -158,7 +164,7 @@ class WeatherFragment : Fragment() {
 
     private fun bindData(data: OneApiCallWeatherDTO, dailyHourlyEnum: DailyHourlyEnum) {
         binding.weatherTemp.text = data.current.temp.toInt().toString()
-        binding.weatherTimezone.text = data.timezone
+        binding.weatherTimezone.text = data.timezone.replace('_', ' ')
         binding.weatherParamsWindDynamic.text =
             data.current.wind_speed.roundToInt().toString()
         binding.weatherMain.text = data.current.weather[0].description
@@ -178,10 +184,10 @@ class WeatherFragment : Fragment() {
 
     private fun setupRecycler() {
         weatherAdapter = WeatherAdapter(requireContext(), clickListener)
-        if(resources.configuration.orientation==Configuration.ORIENTATION_PORTRAIT) {
+        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
             binding.weatherList.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        }else {
+        } else {
             binding.weatherList.layoutManager =
                 LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         }

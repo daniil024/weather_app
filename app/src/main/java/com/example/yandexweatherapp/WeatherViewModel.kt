@@ -3,6 +3,7 @@ package com.example.yandexweatherapp
 import android.Manifest
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
@@ -12,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.yandexweatherapp.models.OneApiCallWeatherDTO
 import com.example.yandexweatherapp.network.OpenWeatherRetrofit
+import com.example.yandexweatherapp.room.WeatherDatabase
 import com.example.yandexweatherapp.utils.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -19,11 +21,24 @@ import kotlinx.coroutines.launch
 
 class WeatherViewModel(context: Application) : AndroidViewModel(context) {
 
+    companion object {
+        private val LOCATION_PREFERENCES = "location_weather"
+
+        private lateinit var sharedPreference: SharedPreferences
+    }
+
+    init {
+        sharedPreference = context.getSharedPreferences(
+            LOCATION_PREFERENCES,
+            Context.MODE_PRIVATE
+        )
+    }
+
     private val _coordinates = MutableLiveData<Pair<Double, Double>>()
     val coordinates: LiveData<Pair<Double, Double>>
         get() = _coordinates
 
-    fun setCoordinates(lat:Double, lon:Double){
+    fun setCoordinates(lat: Double, lon: Double) {
         _coordinates.value = Pair(lat, lon)
     }
 
@@ -39,5 +54,23 @@ class WeatherViewModel(context: Application) : AndroidViewModel(context) {
                 lang
             )
         )
+    }
+
+    fun putLocationToSharPref(lat: Double, lon: Double) {
+        val editor = sharedPreference.edit()
+        editor.putString("lat", lat.toString())
+        editor.putString("lon", lon.toString())
+        editor.apply()
+    }
+
+    fun getLocationFromSharPref() {
+        val lat = sharedPreference.getString("lat", null)?.toDouble()
+        val lon = sharedPreference.getString("lon", null)?.toDouble()
+        val dbInstance = WeatherDatabase.getWeatherDatabase(getApplication())
+
+        if (lat != null && lon != null)
+            _oneCallApiCallWeatherDTO.postValue(
+                dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace(lat, lon)
+            )
     }
 }
