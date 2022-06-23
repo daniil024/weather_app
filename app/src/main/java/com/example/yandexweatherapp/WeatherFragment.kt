@@ -41,12 +41,6 @@ import kotlin.math.roundToInt
 
 class WeatherFragment : Fragment() {
 
-    companion object {
-        const val LOCATION_PREFERENCES = "location_weather"
-    }
-
-    private lateinit var locationSharedPreferences: SharedPreferences
-
     private lateinit var layout: View
     private var _binding: WeatherFragmentBinding? = null
     private val binding get() = _binding!!
@@ -80,8 +74,6 @@ class WeatherFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        locationSharedPreferences =
-            requireContext().getSharedPreferences(LOCATION_PREFERENCES, Context.MODE_PRIVATE)
         fusedLocationProviderClient =
             LocationServices.getFusedLocationProviderClient(requireContext())
     }
@@ -131,6 +123,7 @@ class WeatherFragment : Fragment() {
     private fun setupObserver() {
         viewModel.oneCallApiCallWeatherDTO.observe(viewLifecycleOwner) { data ->
             if (data != null) {
+                Log.i("my_log:", data.toString())
                 val lat = data.lat
                 val lon = data.lon
                 scope.launch(Dispatchers.IO) {

@@ -73,4 +73,18 @@ class WeatherViewModel(context: Application) : AndroidViewModel(context) {
                 dbInstance?.oneApiCallWeatherDao()?.getWeatherAtPlace(lat, lon)
             )
     }
+
+    fun retrieveWeather(timezone:String){
+        val dbInstance = WeatherDatabase.getWeatherDatabase(getApplication())
+
+        val newWeather = dbInstance?.oneApiCallWeatherDao()?.getWeatherByTimeZone(timezone)
+        _oneCallApiCallWeatherDTO.postValue(
+            newWeather!!
+        )
+    }
+
+    fun saveWeather(weather:OneApiCallWeatherDTO){
+        val dbInstance = WeatherDatabase.getWeatherDatabase(getApplication())
+        dbInstance?.oneApiCallWeatherDao()?.insertWeatherAtPlace(weather)
+    }
 }

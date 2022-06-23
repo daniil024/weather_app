@@ -13,6 +13,9 @@ interface OneApiCallWeatherDao {
     @Query("SELECT * FROM one_api_call WHERE lat LIKE :lat AND lon LIKE :lon")
     fun getWeatherAtPlace(lat: Double, lon: Double): OneApiCallWeatherDTO?
 
+    @Query("SELECT * FROM one_api_call WHERE timezone LIKE :timezone")
+    fun getWeatherByTimeZone(timezone: String): OneApiCallWeatherDTO?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertWeatherAtPlace(data: OneApiCallWeatherDTO)
 }
